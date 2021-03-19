@@ -2,6 +2,22 @@ var issueContainerEl = document.querySelector("#issues-container");
 var limitWarningEl = document.querySelector("#limit-warning");
 var repoNameEl = document.querySelector("#repo-name");
 
+var getRepoName = function() {
+  // grab repo name from url query string
+  var queryString = document.location.search;
+  var repoName = queryString.split("=")[1];
+
+  if (repoName) {
+    // display repo name on the page
+    repoNameEl.textContent = repoName;
+ 
+    getRepoIssues(repoName);
+  } else {
+    // if no repo was given, redirect to the homepage
+    document.location.replace("./index.html");
+  }
+};
+
 var getRepoIssues = function(repo) {
   // format the github api url
   var apiUrl = "https://api.github.com/repos/" + repo + "/issues?direction=asc";
@@ -18,10 +34,9 @@ fetch(apiUrl).then(function(response) {
         displayWarning(repo);
       }
     });
-  }
-  else {
-    console.log(response);
-    alert("There was a problem with your request!");
+  } else {
+    // if no repo was given, redirect to the homepage
+    document.location.replace("./index.html");
   }
 });
 };
@@ -35,6 +50,9 @@ var displayIssues = function(issues) {
     for (var i = 0; i < issues.lengh; i++) {
     // create a link element to take users to the issue on github
     var issueEl = document.createElement("a");
+    issueEl.classList = "list-item flex-row justify-space-between align-center";
+    issueEl.setAttribute("href", issues[i].html_url);
+    issueEl.setAttribute("target", "_blank");
 
     // create span to hold issue title
 var titleEl = document.createElement("span");
@@ -48,7 +66,6 @@ var typeEl = document.createElement("span");
 
 // check if issue is an actual issue or a pull request
 if (issues[i].pull_request) {
-    issueContainerEl.appendChild(issueEl);
   typeEl.textContent = "(Pull request)";
 } else {
   typeEl.textContent = "(Issue)";
@@ -57,10 +74,8 @@ if (issues[i].pull_request) {
 // append to container
 issueEl.appendChild(typeEl);
 
-    issueEl.classList = "list-item flex-row justify-space-between align-center";
-    issueEl.setAttribute("href", issues[i].html_url);
-    issueEl.setAttribute("target", "_blank");
-    
+issueContainerEl.appendChild(issueEl);
+       
   }
 };
 
@@ -77,4 +92,4 @@ linkEl.setAttribute("target", "_blank");
 limitWarningEl.appendChild(linkEl);
 };
 
-getRepoIssues("facebook/react");
+getRepoName();
